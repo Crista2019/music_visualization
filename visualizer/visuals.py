@@ -251,7 +251,8 @@ class MainWidget2(BaseWidget):
         self.canvas.add(self.anim_group)
         self.noteinfo = ''
 
-        self.prevNote = None
+        self.prevNote1 = None
+        self.prevNote2 = None
 
     def on_update(self):
 
@@ -269,14 +270,24 @@ class MainWidget2(BaseWidget):
         print('key-down', keycode, modifiers)
 
         # triggering melody notes with key presses
-        melody = lookup(keycode[1], 'cvgbhnjmk,l.;',
-                        (-5, -3, -1, 0, 2, 4, 5, 7, 9, 11, 12, 14, 16))
-        if melody is not None:
+        part1 = lookup(keycode[1], 'cvgbhnjmk,l.;',
+                       (-5, -3, -1, 0, 2, 4, 5, 7, 9, 11, 12, 14, 16))
+        if part1 is not None:
 
-            newNote = MelodyNote(melody, self.root_pitch,
-                                 self.decay, self.prevNote)
+            newNote = MelodyNote(part1, self.root_pitch,
+                                 self.decay, self.prevNote1)
             self.anim_group.add(newNote)
-            self.prevNote = newNote
+            self.prevNote1 = newNote
+
+        part2 = lookup(keycode[1], 'qazwsx',
+                       (-5, -3, -1, 0, 2, 4,))
+
+        if part2 is not None:
+
+            newNote2 = MelodyNote(part2, self.root_pitch,
+                                  self.decay, self.prevNote2)
+            self.anim_group.add(newNote2)
+            self.prevNote2 = newNote2
 
         # changing the base pitch
         base_sel = lookup(keycode[1], ('up', 'down'), (1, -1))
