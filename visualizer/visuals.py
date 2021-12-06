@@ -1,5 +1,6 @@
 import kivy
 import numpy as np
+import pickle5 as pickle
 from random import randint, random
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from kivy.graphics import Color, Ellipse, Rectangle, Line
@@ -238,10 +239,8 @@ class MainWidget2(BaseWidget):
         super(MainWidget2, self).__init__()
 
         self.root_pitch = 48
-        self.gain = .75
-        self.attack = 0.01
+
         self.decay = 1.0
-        self.toRemove = {}
 
         self.info = topleft_label()
         self.add_widget(self.info)
@@ -249,10 +248,30 @@ class MainWidget2(BaseWidget):
         # animation stuff
         self.anim_group = AnimGroup()
         self.canvas.add(self.anim_group)
-        self.noteinfo = ''
+        #self.noteinfo = ''
 
         self.prevNote1 = None
         self.prevNote2 = None
+
+        self.index = 0
+
+        open_file = open('soprano.pickle', "rb")
+        self.part1 = pickle.load(open_file)
+        open_file.close()
+
+        open_file = open('alto.pickle', "rb")
+        self.part2 = pickle.load(open_file)
+        open_file.close()
+
+        open_file = open('alto.pickle', "rb")
+        self.part3 = pickle.load(open_file)
+        open_file.close()
+
+        open_file = open('alto.pickle', "rb")
+        self.part4 = pickle.load(open_file)
+        open_file.close()
+
+        print(self.part1)
 
     def on_update(self):
 
@@ -264,6 +283,16 @@ class MainWidget2(BaseWidget):
         #self.info.text += '\nfps:%d' % kivyClock.get_fps()
         #self.info.text += '\nobjects:%d' % len(self.anim_group.objects)
         #self.info.text += '\n noteinfo'+self.noteinfo
+        self.info.text += str(kivyClock.get_time())
+
+        time = kivyClock.getTime()
+
+        if time >= self.part1[self.index].time:
+            newNote = MelodyNote(self.part1[self.index].pitch-self.root_pitch, self.root_pitch,
+                                 self.decay, self.prevNote1)
+            self.anim_group.add(newNote)
+            self.prevNote1 = newNote
+            self.index += 1
 
     def on_key_down(self, keycode, modifiers):
         # trigger a major triad to play with left hand keys
