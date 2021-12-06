@@ -35,7 +35,7 @@ reversed_pitchDict = {value: key for (key, value) in pitchDict.items()}
 
 class MelodyNote(InstructionGroup):
     # Shape object of a single note
-    def __init__(self, pitch, rootPitch, duration, prevNote=None):
+    def __init__(self, pitch, rootPitch, duration, color, prevNote=None,):
         super(MelodyNote, self).__init__()
 
         # make the shape a color that corresponds to pitch
@@ -58,7 +58,8 @@ class MelodyNote(InstructionGroup):
             self.add(self.line)
 
         # drawing shape
-        self.color = Color(*pitchDict[(pitch+rootPitch) % 12])
+        #self.color = Color(*pitchDict[(pitch+rootPitch) % 12])
+        self.color = Color(*color)
         self.add(self.color)
         self.size = 50
         self.shape = CEllipse(cpos=self.pos, csize=(self.size, self.size))
@@ -270,7 +271,7 @@ class AudioController(object):
 class MainWidget2(BaseWidget):
     def __init__(self):
         super(MainWidget2, self).__init__()
-        self.audio_ctrl = AudioController('66.6.wav')
+        #self.audio_ctrl = AudioController('66.6.wav')
         self.root_pitch = 48
 
         self.decay = 1.0
@@ -331,45 +332,49 @@ class MainWidget2(BaseWidget):
 
         time = kivyClock.get_time()
 
-        if self.index1 < len(self.part1) and time >= self.part1[self.index1][0]*1.5:
+        r = abs(np.sin(time/10))
+        g = abs(np.sin(time/10+2))
+        b = abs(np.sin(time/10+4))
+
+        if self.index1 < len(self.part1) and time >= self.part1[self.index1][0]:
             print(self.part1[self.index1])
             newNote1 = MelodyNote(self.part1[self.index1][1]-58, self.root_pitch,
-                                  self.decay, self.prevNote1)
+                                  self.decay, (r, g, b), self.prevNote1)
             self.anim_group.add(newNote1)
             self.prevNote1 = newNote1
             self.index1 += 1
 
-        if self.index2 < len(self.part2) and time >= self.part2[self.index2][0]*1.5:
+        if self.index2 < len(self.part2) and time >= self.part2[self.index2][0]:
             newNote2 = MelodyNote(self.part2[self.index2][1]-58, self.root_pitch,
-                                  self.decay, self.prevNote2)
+                                  self.decay, (g, b, r),  self.prevNote2)
             self.anim_group.add(newNote2)
             self.prevNote2 = newNote2
             self.index2 += 1
 
-        if self.index3 < len(self.part3) and time >= self.part3[self.index3][0]*1.5:
+        if self.index3 < len(self.part3) and time >= self.part3[self.index3][0]:
             newNote3 = MelodyNote(self.part3[self.index3][1]-58, self.root_pitch,
-                                  self.decay, self.prevNote3)
+                                  self.decay, (b, r, g), self.prevNote3)
             self.anim_group.add(newNote3)
             self.prevNote3 = newNote3
             self.index3 += 1
 
-        if self.index4 < len(self.part4) and time >= self.part4[self.index4][0]*1.5:
+        if self.index4 < len(self.part4) and time >= self.part4[self.index4][0]:
             newNote4 = MelodyNote(self.part4[self.index4][1]-58, self.root_pitch,
-                                  self.decay, self.prevNote4)
+                                  self.decay, (g, r, b), self.prevNote4)
             self.anim_group.add(newNote4)
             self.prevNote4 = newNote4
             self.index4 += 1
 
         self.anim_group.on_update()
-        self.audio_ctrl.on_update()
+        # self.audio_ctrl.on_update()
 
     def on_key_down(self, keycode, modifiers):
         # trigger a major triad to play with left hand keys
         print('key-down', keycode, modifiers)
 
         # triggering melody notes with key presses
-        if keycode[1] == 'p':
-            self.audio_ctrl.toggle()
+        # if keycode[1] == 'p':
+        # self.audio_ctrl.toggle()
 
 
 if __name__ == "__main__":
