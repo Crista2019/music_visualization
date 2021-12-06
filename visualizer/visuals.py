@@ -1,6 +1,6 @@
 import kivy
 import numpy as np
-import pickle5 as pickle
+import pickle
 from random import randint, random
 from kivy.graphics import PushMatrix, PopMatrix, Translate, Scale, Rotate
 from kivy.graphics import Color, Ellipse, Rectangle, Line
@@ -46,7 +46,7 @@ class MelodyNote(InstructionGroup):
         self.prevNote = prevNote
 
         # Let y position of start depend on pitch
-        self.pos = (Window.width-5, Window.height/23*(pitch+6))
+        self.pos = (Window.width-5, Window.height/37*(pitch+18))
 
         # drawing a line between notes
         if self.prevNote != None:
@@ -104,13 +104,13 @@ class MelodyNote(InstructionGroup):
             self.secondshape.csize = (newsize[0]-3, newsize[1]-3)
 
         # fading out the alpha
-        self.color.a = self.color.a - .5/(self.lifetime*kivyClock.get_fps())
+        self.color.a = self.color.a - .5/(self.lifetime*kivyClock.get_fps()+1)
         self.secondcolor.a = self.secondcolor.a + \
             (self.time-self.lifetime/20)/self.lifetime*0.05
 
         # moves to the left
         newpos = (self.pos[0]-(Window.width /
-                  (self.lifetime*kivyClock.get_fps())), self.pos[1])
+                  (self.lifetime*kivyClock.get_fps()+1)), self.pos[1])
         self.pos = newpos
         self.shape.cpos = newpos
         self.secondshape.cpos = newpos
@@ -252,8 +252,13 @@ class MainWidget2(BaseWidget):
 
         self.prevNote1 = None
         self.prevNote2 = None
+        self.prevNote3 = None
+        self.prevNote4 = None
 
-        self.index = 0
+        self.index1 = 0
+        self.index2 = 0
+        self.index3 = 0
+        self.index4 = 0
 
         open_file = open('soprano.pickle', "rb")
         self.part1 = pickle.load(open_file)
@@ -263,19 +268,24 @@ class MainWidget2(BaseWidget):
         self.part2 = pickle.load(open_file)
         open_file.close()
 
-        open_file = open('alto.pickle', "rb")
+        open_file = open('tenor.pickle', "rb")
         self.part3 = pickle.load(open_file)
         open_file.close()
 
-        open_file = open('alto.pickle', "rb")
+        open_file = open('bass.pickle', "rb")
         self.part4 = pickle.load(open_file)
         open_file.close()
 
+        self.part1.sort(key=lambda a: a[0])
+        self.part2.sort(key=lambda a: a[0])
+        self.part3.sort(key=lambda a: a[0])
+        self.part4.sort(key=lambda a: a[0])
         print(self.part1)
+        print(self.part2)
+        print(self.part3)
+        print(self.part4)
 
     def on_update(self):
-
-        self.anim_group.on_update()
 
         #self.info.text = 'load: %.2f\n' % self.audio.get_cpu_load()
         #self.info.text += 'gain: %.2f\n' % self.gain
@@ -285,14 +295,37 @@ class MainWidget2(BaseWidget):
         #self.info.text += '\n noteinfo'+self.noteinfo
         self.info.text += str(kivyClock.get_time())
 
-        time = kivyClock.getTime()
+        time = kivyClock.get_time()
 
-        if time >= self.part1[self.index].time:
-            newNote = MelodyNote(self.part1[self.index].pitch-self.root_pitch, self.root_pitch,
-                                 self.decay, self.prevNote1)
-            self.anim_group.add(newNote)
-            self.prevNote1 = newNote
-            self.index += 1
+        if self.index1 < len(self.part1) and time >= self.part1[self.index1][0]:
+            newNote1 = MelodyNote(self.part1[self.index1][1]-58, self.root_pitch,
+                                  self.decay, self.prevNote1)
+            self.anim_group.add(newNote1)
+            self.prevNote1 = newNote1
+            self.index1 += 1
+
+        if self.index2 < len(self.part2) and time >= self.part2[self.index2][0]:
+            newNote2 = MelodyNote(self.part2[self.index2][1]-58, self.root_pitch,
+                                  self.decay, self.prevNote2)
+            self.anim_group.add(newNote2)
+            self.prevNote2 = newNote2
+            self.index2 += 1
+
+        if self.index3 < len(self.part3) and time >= self.part3[self.index3][0]:
+            newNote3 = MelodyNote(self.part3[self.index3][1]-58, self.root_pitch,
+                                  self.decay, self.prevNote3)
+            self.anim_group.add(newNote3)
+            self.prevNote3 = newNote3
+            self.index3 += 1
+
+        if self.index4 < len(self.part4) and time >= self.part4[self.index4][0]:
+            newNote4 = MelodyNote(self.part4[self.index4][1]-58, self.root_pitch,
+                                  self.decay, self.prevNote4)
+            self.anim_group.add(newNote4)
+            self.prevNote4 = newNote4
+            self.index4 += 1
+
+        self.anim_group.on_update()
 
     def on_key_down(self, keycode, modifiers):
         # trigger a major triad to play with left hand keys
