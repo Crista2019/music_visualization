@@ -14,6 +14,8 @@ from core import BaseWidget, run, lookup
 from gfxutil import topleft_label, CEllipse, CRectangle, KFAnim, AnimGroup
 from note import NoteGenerator, Envelope
 from mixer import Mixer
+from wavegen import WaveGenerator
+from wavesrc import WaveBuffer, WaveFile
 from audio import Audio
 
 import sys
@@ -233,11 +235,42 @@ class MainWidget1(BaseWidget):
 
             del self.toRemove[keycode[1]]
 
+# Handles everything about Audio.
+#   creates the main Audio object
+#   load and plays solo and bg audio tracks
+#   creates audio buffers for sound-fx (miss sound)
+#   functions as the clock (returns song time elapsed)
+
+
+class AudioController(object):
+    def __init__(self, solo):
+        super(AudioController, self).__init__()
+        self.audio = Audio(2)
+        self.mixer = Mixer()
+        self.audio.set_generator(self.mixer)
+
+        # song
+        self.solo = WaveGenerator(WaveFile(solo))
+        self.mixer.add(self.solo)
+
+        self.solo.pause()
+
+    def toggle(self):
+        self.solo.play_toggle()
+
+    # return current time (in seconds) of song
+    def get_time(self):
+        return self.solo.frame / Audio.sample_rate
+
+    # needed to update audio
+    def on_update(self):
+        self.audio.on_update()
+
 
 class MainWidget2(BaseWidget):
     def __init__(self):
         super(MainWidget2, self).__init__()
-
+        self.audio_ctrl = AudioController('66.6.wav')
         self.root_pitch = 48
 
         self.decay = 1.0
@@ -280,10 +313,11 @@ class MainWidget2(BaseWidget):
         self.part2.sort(key=lambda a: a[0])
         self.part3.sort(key=lambda a: a[0])
         self.part4.sort(key=lambda a: a[0])
-        print(self.part1)
-        print(self.part2)
-        print(self.part3)
-        print(self.part4)
+
+        self.part1 = [(x[0]+3, x[1]) for x in self.part1]
+        self.part2 = [(x[0]+3, x[1]) for x in self.part2]
+        self.part3 = [(x[0]+3, x[1]) for x in self.part3]
+        self.part4 = [(x[0]+3, x[1]) for x in self.part4]
 
     def on_update(self):
 
@@ -297,28 +331,29 @@ class MainWidget2(BaseWidget):
 
         time = kivyClock.get_time()
 
-        if self.index1 < len(self.part1) and time >= self.part1[self.index1][0]:
+        if self.index1 < len(self.part1) and time >= self.part1[self.index1][0]*1.5:
+            print(self.part1[self.index1])
             newNote1 = MelodyNote(self.part1[self.index1][1]-58, self.root_pitch,
                                   self.decay, self.prevNote1)
             self.anim_group.add(newNote1)
             self.prevNote1 = newNote1
             self.index1 += 1
 
-        if self.index2 < len(self.part2) and time >= self.part2[self.index2][0]:
+        if self.index2 < len(self.part2) and time >= self.part2[self.index2][0]*1.5:
             newNote2 = MelodyNote(self.part2[self.index2][1]-58, self.root_pitch,
                                   self.decay, self.prevNote2)
             self.anim_group.add(newNote2)
             self.prevNote2 = newNote2
             self.index2 += 1
 
-        if self.index3 < len(self.part3) and time >= self.part3[self.index3][0]:
+        if self.index3 < len(self.part3) and time >= self.part3[self.index3][0]*1.5:
             newNote3 = MelodyNote(self.part3[self.index3][1]-58, self.root_pitch,
                                   self.decay, self.prevNote3)
             self.anim_group.add(newNote3)
             self.prevNote3 = newNote3
             self.index3 += 1
 
-        if self.index4 < len(self.part4) and time >= self.part4[self.index4][0]:
+        if self.index4 < len(self.part4) and time >= self.part4[self.index4][0]*1.5:
             newNote4 = MelodyNote(self.part4[self.index4][1]-58, self.root_pitch,
                                   self.decay, self.prevNote4)
             self.anim_group.add(newNote4)
@@ -326,35 +361,15 @@ class MainWidget2(BaseWidget):
             self.index4 += 1
 
         self.anim_group.on_update()
+        self.audio_ctrl.on_update()
 
     def on_key_down(self, keycode, modifiers):
         # trigger a major triad to play with left hand keys
         print('key-down', keycode, modifiers)
 
         # triggering melody notes with key presses
-        part1 = lookup(keycode[1], 'cvgbhnjmk,l.;',
-                       (-5, -3, -1, 0, 2, 4, 5, 7, 9, 11, 12, 14, 16))
-        if part1 is not None:
-
-            newNote = MelodyNote(part1, self.root_pitch,
-                                 self.decay, self.prevNote1)
-            self.anim_group.add(newNote)
-            self.prevNote1 = newNote
-
-        part2 = lookup(keycode[1], 'qazwsx',
-                       (-5, -3, -1, 0, 2, 4,))
-
-        if part2 is not None:
-
-            newNote2 = MelodyNote(part2, self.root_pitch,
-                                  self.decay, self.prevNote2)
-            self.anim_group.add(newNote2)
-            self.prevNote2 = newNote2
-
-        # changing the base pitch
-        base_sel = lookup(keycode[1], ('up', 'down'), (1, -1))
-        if base_sel is not None:
-            self.root_pitch += base_sel
+        if keycode[1] == 'p':
+            self.audio_ctrl.toggle()
 
 
 if __name__ == "__main__":
