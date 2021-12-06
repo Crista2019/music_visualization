@@ -25,7 +25,7 @@ import time
 class Audio(object):
     """
     Audio input and output stream manager. Only one `Audio` object should be created. Audio output
-    (sent to speakers) is supplied by setting an audio Generator class. Audio input (from microphone) is 
+    (sent to speakers) is supplied by setting an audio Generator class. Audio input (from microphone) is
     provided via a callback function. You can also "tap into" the output audio using a callback.
 
     :param num_channels: Number of output channels. Can be 1 (mono) or 2 (stereo)
@@ -33,7 +33,7 @@ class Audio(object):
     :param listen_func: if provided, call with audio buffer about to be sent out to speaker with
         parameters ``(audio, num_channels)``
 
-    :param input_func: if provided, input streaming is enabled, and function will be called when 
+    :param input_func: if provided, input streaming is enabled, and function will be called when
         input data is available with parameters ``(audio, num_channels)``
 
     :param num_input_channels: stream 1 (mono) or 2 (stereo) input channels. Note that some devices
@@ -46,10 +46,10 @@ class Audio(object):
     :param Audio.buffer_size: Internal buffer size. A smaller buffer will lower latency, at the risk of buffer underrun.
         Default is 512.
 
-    :param Audio.out_dev: Can specify a non-default audio output device (via integer index). 
+    :param Audio.out_dev: Can specify a non-default audio output device (via integer index).
         See :meth:`print_audio_devices`. Default is None, which chooses the default output device.
 
-    :param Audio.in_dev: Can specify a non-default audio input device (via integer index). 
+    :param Audio.in_dev: Can specify a non-default audio input device (via integer index).
         See :meth:`print_audio_devices`. Default is None, which chooses the default input device.
 
 
@@ -114,8 +114,8 @@ class Audio(object):
 
     def set_generator(self, gen):
         """
-        Sets a Generator object that must supply audio data to Audio. Generator must define the 
-        method ``generate(num_frames, num_channels)``, which returns a numpy array of 
+        Sets a Generator object that must supply audio data to Audio. Generator must define the
+        method ``generate(num_frames, num_channels)``, which returns a numpy array of
         length *(num_frames * num_channels)*.
 
         :param gen: The generator object. May be `None`.
