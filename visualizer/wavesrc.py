@@ -8,9 +8,11 @@
 #
 #####################################################################
 
+from collections import namedtuple
 import numpy as np
 import wave
-from .audio import Audio
+from audio import Audio
+
 
 class WaveFile(object):
     """
@@ -28,7 +30,7 @@ class WaveFile(object):
 
         self.wave = wave.open(filepath)
         self.num_channels, self.sampwidth, self.sr, self.end, \
-           comptype, compname = self.wave.getparams()
+            comptype, compname = self.wave.getparams()
 
         # for now, we will only accept 16 bit files and the sample rate must match
         assert(self.sampwidth == 2)
@@ -52,7 +54,7 @@ class WaveFile(object):
         raw_bytes = self.wave.readframes(end_frame - start_frame)
 
         # convert raw data to numpy array, assuming int16 arrangement
-        samples = np.fromstring(raw_bytes, dtype = np.int16)
+        samples = np.fromstring(raw_bytes, dtype=np.int16)
 
         # convert from integer type to floating point, and scale to [-1, 1]
         samples = samples.astype(float)
@@ -75,6 +77,8 @@ class WaveFile(object):
 #
 # Now create WaveBuffer. Same WaveSource interface, but can take a subset of
 # audio data from a wave file and holds all that data in memory.
+
+
 class WaveBuffer(object):
     """
     Reads certain data from a wave file and stores it in memory.
@@ -82,6 +86,7 @@ class WaveBuffer(object):
     This is a WaveSource -- a wave data providing interface. Call :meth:`get_frames()`
     to get audio data in the format we like *(numpy array, float32)*.
     """
+
     def __init__(self, filepath, start_frame, num_frames):
         """
         :param filepath: The path to the wave file. Should be a 16 bit file with a sample rate of 44100Hz.
@@ -109,7 +114,7 @@ class WaveBuffer(object):
         """
         start_sample = start_frame * self.num_channels
         end_sample = end_frame * self.num_channels
-        return self.data[start_sample : end_sample]
+        return self.data[start_sample: end_sample]
 
     def get_num_channels(self):
         """
@@ -118,12 +123,12 @@ class WaveBuffer(object):
         return self.num_channels
 
 
-
 # simple class to hold a region: name, start frame, length (in frames)
-from collections import namedtuple
 AudioRegion = namedtuple('AudioRegion', ['name', 'start', 'len'])
 
 # a collection of regions read from a file
+
+
 class SongRegions(object):
     def __init__(self, filepath):
         super(SongRegions, self).__init__()
@@ -147,13 +152,15 @@ class SongRegions(object):
             (start_sec, x, len_sec, name) = line.strip().split('\t')
 
             # convert time (in seconds) to frames. Assumes Audio.sample_rate
-            start_f = int( float(start_sec) * Audio.sample_rate )
-            len_f = int( float(len_sec) * Audio.sample_rate )
+            start_f = int(float(start_sec) * Audio.sample_rate)
+            len_f = int(float(len_sec) * Audio.sample_rate)
 
             self.regions.append(AudioRegion(name, start_f, len_f))
 
 # Reads from a regions file and a wave file to create a bunch of WaveBuffers,
 # one per region.
+
+
 def make_wave_buffers(wave_path, regions_path):
     """
     Reads from a regions file and a wave file to create one WaveBuffer per region.
@@ -162,7 +169,7 @@ def make_wave_buffers(wave_path, regions_path):
     :param regions_path: The path to the text file containing one region per line.
         Each line should contain the following, separated by tabs:
         start time (in seconds), index, length (in seconds), region name.
-    
+
     :returns: A dictionary of WaveBuffers, keyed by region name.
     """
     sr = SongRegions(regions_path)
