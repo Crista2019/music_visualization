@@ -271,7 +271,7 @@ class AudioController(object):
 class MainWidget2(BaseWidget):
     def __init__(self):
         super(MainWidget2, self).__init__()
-        #self.audio_ctrl = AudioController('66.6.wav')
+        self.audio_ctrl = AudioController('66.6.wav')
         self.root_pitch = 48
 
         self.decay = 1.0
@@ -366,15 +366,15 @@ class MainWidget2(BaseWidget):
             self.index4 += 1
 
         self.anim_group.on_update()
-        # self.audio_ctrl.on_update()
+        self.audio_ctrl.on_update()
 
     def on_key_down(self, keycode, modifiers):
         # trigger a major triad to play with left hand keys
         print('key-down', keycode, modifiers)
 
         # triggering melody notes with key presses
-        # if keycode[1] == 'p':
-        # self.audio_ctrl.toggle()
+        if keycode[1] == 'p':
+            self.audio_ctrl.toggle()
 
 
 if __name__ == "__main__":
